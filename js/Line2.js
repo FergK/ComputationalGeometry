@@ -122,7 +122,7 @@ class Line2 {
 		var r = this.b.clone().sub(this.a); // p2 - p
 		var s = ls.b.clone().sub(ls.a); // q2 - q
 		var qsubp = ls.a.clone().sub(this.a); // q - p
-		var	uNumerator = qsubp.cross(r); // (q - p) cross r
+		var uNumerator = qsubp.cross(r); // (q - p) cross r
 		var uDenominator = r.cross(s); // r cross s
 
 		if (uNumerator === 0 && uDenominator === 0) {
@@ -131,12 +131,12 @@ class Line2 {
 			var rdotr = r.dot(r);
 	  		var t0 = qsubp.dot(r) / rdotr;
 	  		var t1 = qsubp.clone().add(s).dot(r) / rdotr;
-
+	  		
 	  		if ( // Check if they overlap
-				( ( t0 >= 0 ) && ( t0 <= 1 ) ) ||
-				( ( t1 >= 0 ) && ( t1 <= 1 ) ) ||
-				( ( t0 <= 0 ) && ( t1 >= 1 ) ) ||
-				( ( t1 <= 0 ) && ( t0 >= 1 ) )
+				( (t0 > 0) && (t0 < 1) ) ||
+				( (t1 > 0) && (t1 < 1) ) ||
+				( (t0 < 0) && (t1 > 1) ) ||
+				( (t1 < 0) && (t0 > 1) )
 			) {
 				// CASE B: Line segments are colinear and partially overlapping
 				// Find the endpoints of the overlapping segment and output that line segment
@@ -148,12 +148,7 @@ class Line2 {
 
 	  	}
 
-	  	if ( uDenominator === 0 ) {
-	  		// Segments are parallel and non overlapping
-			return false;
-	  	}
-
-	  	// CASE C: Non-colinear segments share one endpoint
+	  	// CASE C: Segments share one endpoint but do not overlap
 		if ( aEqualsLa || aEqualsLb ) {
 			output.type = 'sharedEndpoint';
 			output.result = this.a.clone();
@@ -164,6 +159,11 @@ class Line2 {
 			output.result = this.b.clone();
 			return true;
 		}
+
+	  	if ( uDenominator === 0 ) {
+	  		// Segments are parallel and non overlapping
+			return false;
+	  	}
 
 	  	// Segments are non-parallel, we need to check if they intersect
 	  	var u = uNumerator / uDenominator;
@@ -195,11 +195,11 @@ class Line2 {
 	}
 }
 
-var foo = new Line2( new Vector2(0, 0), new Vector2(100, 0));
-var bar = new Line2( new Vector2(30, 0), new Vector2(50, -75));
-var output = {};
-console.log(foo.intersects(bar, output));
-console.log(output);
+// var foo = new Line2( new Vector2(0, 0), new Vector2(100, 0));
+// var bar = new Line2( new Vector2(-20, 0), new Vector2(-10, 0));
+// var output = {};
+// console.log(foo.intersects(bar, output));
+// console.log(output);
 
 // console.log( foo.at(0) );
 // console.log( foo.at(1) );
