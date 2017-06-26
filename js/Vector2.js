@@ -12,6 +12,24 @@ class Vector2 {
 	constructor(x, y) {
 		this.x = (x !== undefined) ? x : 0;
 		this.y = (y !== undefined) ? y : 0;
+		return this;
+	}
+
+	set(x, y) {
+		this.x = x;
+		this.y = y;
+		return this;
+	}
+
+	clone() {
+		// Returns a copy of this vector
+		return new Vector2(this.x, this.y);
+	}
+
+	copy(v) {
+		this.x = v.x;
+		this.y = v.y;
+		return this;
 	}
 
 	length() {
@@ -56,14 +74,39 @@ class Vector2 {
 		// Scales this vector by scalar s
 		this.x *= s;
 		this.y *= s;
+		return this;
 	}
 
-	dot(x, y) {
-		return (this.x * x) + (this.y * y);
+	dot(v) {
+		return (this.x * v.x) + (this.y * v.y);
 	}
 
-	clone() {
-		// Returns a copy of this vector
-		return new Vector2(this.x, this.y);
+	cross(v) {
+		return (this.x * v.y) - (this.y * v.x);
+	}
+
+	equals(v) {
+		return ((this.x === v.x) && (this.y === v.y));
+	}
+
+	inOrder(v) {
+		// Returns true if:
+		//		This point is above v (this.y > v.y)
+		// 		Y-values are equal, and this point is left of or overlapping v (this.x < v.x)
+		// Otherwise returns false
+
+		if (this.y > v.y) { // If this point is above v
+			return true;
+		} else if (this.y === v.y) { // If y-values are equal
+			if (this.x <= v.x) { // Check if this point is left of or overlapping v
+				return true;
+			}
+		}
+		
+		return false;
 	}
 }
+
+// var foo = new Vector2(1, 2);
+// var bar = new Vector2(3, 4);
+// console.log( foo.cross(bar) );
