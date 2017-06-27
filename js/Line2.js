@@ -39,11 +39,14 @@ class Line2 {
 	}
 
 	center() {
-		// Returns a Vector 2 representing center point of the line segment defined by endpoints a and b
+		// Returns a Vector2 representing center point of the line segment defined by endpoints a and b
 		return new Vector2((this.a.x + this.b.x) / 2, (this.a.y + this.b.y) / 2);
 	}
 
-	at( t ) {
+	at(t) {
+		// Returns a Vector2 along the line, where t is the distance along the line
+		// t=0 returns endpoint a, t=1 returns endpoint b, 0<t<1 will return a point on the line segment
+		// Values outside this range will also work
 		return this.b.clone().sub(this.a).scale(t).add(this.a);
 	}
 
@@ -80,32 +83,42 @@ class Line2 {
 
 	intersects( ls, outputTarget, epsilon ) {
 		// Checks if two line segments are intersecting
-		// Some of this is adapted from two stack overflow answers:
-		// https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
-		// https://github.com/pgkelley4/line-segments-intersect/blob/master/js/line-segments-intersect.js
 
+		// Returns true if the line segments intersect in any way.
 		// Returns false if there is the segments are not equal, and do not overlap or intersect in any way.
 
-		// Returns an object containing the type of result (equal, shared endpoint, endpoint on segment, overlapping colinear, or intersecting) and the result (Vector2 or Line2)
+		// outputTarget is an optional object reference to store the result:
+		//	{
+		//		type: null | 'equal' | 'intersection' | 'sharedEndpoint' | 'endpointOnSegment' | 'colinearOverlap'
+		//		intersection: null | Vector2 | Line2
+		//	}
 
-		// Some vocab:
+		// epsilon is an optional parameter to overcome numerical precison issues that come with  floating point numbers. Setting this to a value >0 will result in detecting endpoint on segment intersections within the range of that value, effectively 'snapping' endpoints onto nearby line segments.
+
+		// TODO: Check overlapping endpoints and endpoints on segment using an epsilon to handle floating point errors
+
+		// Some vocab for understanding the output:
 		//		equal - both segments share the same endpoints
+		//		intersection - a point at which two line segments intersect, not including endpoints
 		//		shared endpoint - segments share one, but not both, endpoints
 		//		endpoint on segment - an endpoint of one segment lies on the other segment
 		//		colinear overlap - two segments are colinear, at least one endpoint of each segment lies on the other segment, and they are not equal
-		//		intersection - a point at which two line segments intersect, not including endpoints
+
+		// Some of this is adapted from two stack overflow answers:
+		// https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+		// https://github.com/pgkelley4/line-segments-intersect/blob/master/js/line-segments-intersect.js
 
 		// When comparing the stack overflow answer to this code:
 		// p and p2 correspond to this.a and this.b
 		// q and q2 correspond to ls.a and ls.b
 
-		// TODO: Check overlapping endpoints and endpoints on segment using an epsilon to handle floating point errors
-
 		// =====================================================================
 
 		var output = outputTarget || {}; // Optional object reference to put results in
-		output.type = 'none';
-		output.result = null;
+		output.type = null;
+		output.intersection = null;
+
+		epsilon = epsilon || 0;
 
 		// CASE A: Line segments are equal and exactly overlapping
 		var aEqualsLa = this.a.equals(ls.a);
@@ -114,7 +127,7 @@ class Line2 {
 		var bEqualsLa = this.b.equals(ls.a);
 		if ( (aEqualsLa && bEqualsLb) || (aEqualsLb && bEqualsLa) ) {
 			output.type = 'equal';
-			output.result = this.clone();
+			output.intersection = this.clone();
 			return true;
 		}
 
@@ -142,7 +155,7 @@ class Line2 {
 				// Find the endpoints of the overlapping segment and output that line segment
 				var ts = [0, 1, t0, t1].sort(function(a, b) { return a - b; }).slice(1, 3);
 				output.type = 'colinearOverlap';
-				output.result = new Line2( this.at(ts[0]), this.at(ts[1]));
+				output.intersection = new Line2( this.at(ts[0]), this.at(ts[1]));
 				return true;
 			}
 
@@ -151,12 +164,12 @@ class Line2 {
 	  	// CASE C: Segments share one endpoint but do not overlap
 		if ( aEqualsLa || aEqualsLb ) {
 			output.type = 'sharedEndpoint';
-			output.result = this.a.clone();
+			output.intersection = this.a.clone();
 			return true;
 		}
 		if ( bEqualsLa || bEqualsLb ) {
 			output.type = 'sharedEndpoint';
-			output.result = this.b.clone();
+			output.intersection = this.b.clone();
 			return true;
 		}
 
@@ -170,23 +183,23 @@ class Line2 {
 	  	var t = qsubp.cross(s) / uDenominator;
 
 	  	// CASE D: Segments are intersecting, not including endpoints
-		// TODO: Use an epsilon here
 	  	if ((u > 0) && (u < 1) && (t > 0) && (t < 1)) {
-	  		output.type = 'intersecting';
-			output.result = this.at(t);
+	  		output.type = 'intersection';
+			output.intersection = this.at(t);
 			return true;
 	  	}
 
 		// CASE E: The endpoint of one segment lies on the other segment
-		// TODO: Use an epsilon here
-		if ((u === 0) || (u === 1)) {
-	  		output.type = 'endpointOnSegment';
-			output.result = ls.at(u);
+		var uEpsilon = epsilon / ls.length(); // Convert the epsilon from world units to parametric units
+		if (Number.inEpsilon(u, 0, uEpsilon) || Number.inEpsilon(u, 1, uEpsilon)) {
+			output.type = 'endpointOnSegment';
+			output.intersection = ls.at(u);
 			return true;
 	  	}
-		if ((t === 0) || (t === 1)) {
-	  		output.type = 'endpointOnSegment';
-			output.result = this.at(t);
+		var tEpsilon = epsilon / this.length();
+		if (Number.inEpsilon(t, 0, tEpsilon) || Number.inEpsilon(t, 1, tEpsilon)) {
+			output.type = 'endpointOnSegment';
+			output.intersection = this.at(t);
 			return true;
 	  	}
 
@@ -195,11 +208,11 @@ class Line2 {
 	}
 }
 
-// var foo = new Line2( new Vector2(0, 0), new Vector2(100, 0));
-// var bar = new Line2( new Vector2(-20, 0), new Vector2(-10, 0));
-// var output = {};
-// console.log(foo.intersects(bar, output));
-// console.log(output);
+var foo = new Line2( new Vector2(0, 0), new Vector2(50, 0));
+var bar = new Line2( new Vector2(20, 0), new Vector2(20, 10));
+var output = {};
+console.log(foo.intersects(bar, output, 0.5));
+console.log(output);
 
 // console.log( foo.at(0) );
 // console.log( foo.at(1) );

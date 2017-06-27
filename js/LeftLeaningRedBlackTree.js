@@ -7,6 +7,8 @@
 
 // LLRB
 // Adapted from http://www.cs.princeton.edu/~rs/talks/LLRB/LLRB.pdf
+// This doesn't work... yet.
+
 class LLRBNode {
 	constructor(key, value) {
 		this.key = key;
