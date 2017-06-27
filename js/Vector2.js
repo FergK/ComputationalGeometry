@@ -89,21 +89,23 @@ class Vector2 {
 		return ((this.x === v.x) && (this.y === v.y));
 	}
 
-	inOrder(v) {
-		// Returns true if:
+	order(v) {
+		// Returns -1 if:
 		//		This point is above v (this.y > v.y)
-		// 		Y-values are equal, and this point is left of or overlapping v (this.x < v.x)
-		// Otherwise returns false
+		// 		Y-values are equal, and this point is left of v (this.x < v.x)
+		// Returns 0 if the points have the same coordinates
+		// Otherwise returns 1
 
-		if (this.y > v.y) { // If this point is above v
-			return true;
-		} else if (this.y === v.y) { // If y-values are equal
-			if (this.x <= v.x) { // Check if this point is left of or overlapping v
-				return true;
+		if (this.y > v.y) {
+			return -1;
+		} else if (this.y === v.y) {
+			if (this.x < v.x) {
+				return -1;
+			} if (this.x === v.x) {
+				return 0;
 			}
 		}
-		
-		return false;
+		return 1;
 	}
 }
 

@@ -63,7 +63,7 @@ class Line2 {
 		// If y-values are equal, a is set to the left-most point
 		// If both points are equal, do nothing
 
-		if (!this.a.inOrder(this.b)) {
+		if (this.a.order(this.b) > 0) {
 			this.swap();
 		}
 
@@ -83,7 +83,6 @@ class Line2 {
 
 	intersects( ls, outputTarget, epsilon ) {
 		// Checks if two line segments are intersecting
-
 		// Returns true if the line segments intersect in any way.
 		// Returns false if there is the segments are not equal, and do not overlap or intersect in any way.
 
@@ -95,7 +94,7 @@ class Line2 {
 
 		// epsilon is an optional parameter to overcome numerical precison issues that come with  floating point numbers. Setting this to a value >0 will result in detecting endpoint on segment intersections within the range of that value, effectively 'snapping' endpoints onto nearby line segments.
 
-		// TODO: Check overlapping endpoints and endpoints on segment using an epsilon to handle floating point errors
+		// This doesn't gracefully handle precision issues with detecting colinearity of line segments with nearly identical angles (yet).
 
 		// Some vocab for understanding the output:
 		//		equal - both segments share the same endpoints
@@ -104,13 +103,8 @@ class Line2 {
 		//		endpoint on segment - an endpoint of one segment lies on the other segment
 		//		colinear overlap - two segments are colinear, at least one endpoint of each segment lies on the other segment, and they are not equal
 
-		// Some of this is adapted from two stack overflow answers:
-		// https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
-		// https://github.com/pgkelley4/line-segments-intersect/blob/master/js/line-segments-intersect.js
-
-		// When comparing the stack overflow answer to this code:
-		// p and p2 correspond to this.a and this.b
-		// q and q2 correspond to ls.a and ls.b
+		// Adapted from this stack overflow answer:
+		// https://stackoverflow.com/a/565282
 
 		// =====================================================================
 
@@ -208,11 +202,15 @@ class Line2 {
 	}
 }
 
-var foo = new Line2( new Vector2(0, 0), new Vector2(50, 0));
-var bar = new Line2( new Vector2(20, 0), new Vector2(20, 10));
-var output = {};
-console.log(foo.intersects(bar, output, 0.5));
-console.log(output);
+// var foo = new Line2(new Vector2(0, 2), new Vector2(50, -52));
+// foo.order();
+// console.log(foo);
+
+
+// var bar = new Line2( new Vector2(20, 0), new Vector2(20, 10));
+// var output = {};
+// console.log(foo.intersects(bar, output, 0.5));
+// console.log(output);
 
 // console.log( foo.at(0) );
 // console.log( foo.at(1) );
